@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  /* 60% dominant — neutral backgrounds */
+  --color-base: #FAFAF9;
+  --color-base-soft: #F5F5F4;
+
+  /* 30% secondary — surfaces */
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #F1F5F9;
+  --color-border-soft: #E2E8F0;
+  --color-ink: #0F172A;
+  --color-ink-soft: #475569;
+  --color-ink-muted: #94A3B8;
+
+  /* 10% accent — indigo (primary) + amber (rewards) */
+  --color-accent: #6366F1;
+  --color-accent-soft: #EEF2FF;
+  --color-accent-strong: #4F46E5;
+  --color-reward: #F59E0B;
+  --color-reward-soft: #FEF3C7;
+
+  /* Semantic */
+  --color-success: #10B981;
+  --color-danger: #EF4444;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-base);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes typingDot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
