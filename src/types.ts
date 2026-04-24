@@ -51,7 +51,7 @@ export interface ChatAction {
   payload: string;
 }
 
-export type MessageKind = 'text' | 'reward';
+export type MessageKind = 'text' | 'reward' | 'lesson-card';
 
 export interface ChatMessage {
   id: string;
@@ -59,6 +59,7 @@ export interface ChatMessage {
   content: string;
   actions?: ChatAction[];
   kind?: MessageKind;
+  lessonId?: string;
   timestamp: number;
 }
 
@@ -68,6 +69,7 @@ export type Stage =
   | { kind: 'pick-domain' }
   | { kind: 'pick-course'; domain: Domain }
   | { kind: 'pick-lesson'; courseId: string }
+  | { kind: 'lesson-card'; lessonId: string }
   | { kind: 'lesson-reading'; lessonId: string; paragraphIndex: number }
   | { kind: 'quiz-question'; lessonId: string; questionIndex: number; score: number }
   | { kind: 'quiz-feedback'; lessonId: string; questionIndex: number; score: number; correct: boolean }

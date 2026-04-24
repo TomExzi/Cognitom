@@ -32,6 +32,7 @@ export function materialize(m: OutMessage): ChatMessage {
     kind: m.kind ?? 'text',
     content: m.content,
     actions: m.actions,
+    lessonId: m.lessonId,
   };
 }
 
@@ -118,33 +119,24 @@ export function step(payload: string, stage: Stage, user: UserProfile): Step {
     const course = getCourseByLesson(lessonId);
     return {
       botMessages: [
-        { content: `${course?.emoji ?? '📖'} "${lesson.title}". C'est parti.` },
-        { content: lesson.paragraphs[0] },
-        paragraphFollowup(lessonId, 0, lesson.paragraphs.length),
+        {
+          content: `${course?.emoji ?? '📖'} On va parler de **${lesson.title}**. Ouvre la leçon quand tu es prêt, puis on enchaînera sur le quiz.`,
+        },
+        { kind: 'lesson-card', content: lesson.title, lessonId },
+        {
+          content: `Dis-moi quand t'as fini 👇`,
+          actions: [
+            { label: 'Lancer le quiz', payload: 'quiz-start' },
+            { label: 'Retour au menu', payload: 'back-to-menu' },
+          ],
+        },
       ],
-      newStage: { kind: 'lesson-reading', lessonId, paragraphIndex: 0 },
+      newStage: { kind: 'lesson-card', lessonId },
       effects: [],
     };
   }
 
-  if (payload === 'lesson-continue' && stage.kind === 'lesson-reading') {
-    const lesson = getLesson(stage.lessonId);
-    if (!lesson) return fallback(`Leçon introuvable.`, user);
-    const nextIndex = stage.paragraphIndex + 1;
-    if (nextIndex >= lesson.paragraphs.length) {
-      return startQuiz(stage.lessonId, user);
-    }
-    return {
-      botMessages: [
-        { content: lesson.paragraphs[nextIndex] },
-        paragraphFollowup(stage.lessonId, nextIndex, lesson.paragraphs.length),
-      ],
-      newStage: { kind: 'lesson-reading', lessonId: stage.lessonId, paragraphIndex: nextIndex },
-      effects: [],
-    };
-  }
-
-  if (payload === 'quiz-start' && stage.kind === 'lesson-reading') {
+  if (payload === 'quiz-start' && stage.kind === 'lesson-card') {
     return startQuiz(stage.lessonId, user);
   }
 
@@ -198,26 +190,6 @@ export function step(payload: string, stage: Stage, user: UserProfile): Step {
   }
 
   return fallback(`Je n'ai pas compris. Dis-moi ce que tu veux faire :`, user);
-}
-
-function paragraphFollowup(_lessonId: string, index: number, total: number): OutMessage {
-  const isLast = index === total - 1;
-  if (isLast) {
-    return {
-      content: `Tu as tout lu. Prêt pour le quiz ?`,
-      actions: [
-        { label: 'Lancer le quiz', payload: 'quiz-start' },
-        { label: 'Retour au menu', payload: 'back-to-menu' },
-      ],
-    };
-  }
-  return {
-    content: `(${index + 1}/${total})`,
-    actions: [
-      { label: 'Continue', payload: 'lesson-continue' },
-      { label: 'Stop', payload: 'back-to-menu' },
-    ],
-  };
 }
 
 function startQuiz(lessonId: string, user: UserProfile): Step {
@@ -372,7 +344,7 @@ export function interpretText(text: string, stage: Stage): string | null {
   if (/(profil|stat|niveau|xp)/.test(t)) return 'show-profile';
   if (/badge/.test(t)) return 'show-badges';
   if (/(cours|apprendre|leçon|lecon|quiz)/.test(t)) return 'pick-domain';
-  if (stage.kind === 'lesson-reading' && /(continu|suite|next|ok)/.test(t)) return 'lesson-continue';
+  if (stage.kind === 'lesson-card' && /(quiz|pret|prêt|go|lance)/.test(t)) return 'quiz-start';
   return null;
 }
 
